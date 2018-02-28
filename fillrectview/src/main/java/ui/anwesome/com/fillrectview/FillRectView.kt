@@ -12,6 +12,10 @@ import java.util.concurrent.ConcurrentLinkedQueue
 class FillRectView(ctx : Context, var n : Int = 3) : View(ctx) {
     val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     val renderer = Renderer(this)
+    var onFillListener : OnFillListener ?= null
+    fun addOnFillListener(onFill : (Int) -> Unit) {
+        onFillListener = OnFillListener(onFill)
+    }
     override fun onDraw(canvas : Canvas) {
         renderer.render(canvas, paint)
     }
@@ -118,12 +122,12 @@ class FillRectView(ctx : Context, var n : Int = 3) : View(ctx) {
                 it.draw(canvas, paint)
             }
         }
-        fun update(stopcb : () -> Unit) {
+        fun update(stopcb : (Int) -> Unit) {
             updatingRects.forEach { rect ->
                 rect.update {
                     updatingRects.remove(rect)
                     if(updatingRects.size == 0) {
-                        stopcb()
+                        stopcb(it)
                     }
                 }
             }
@@ -148,6 +152,7 @@ class FillRectView(ctx : Context, var n : Int = 3) : View(ctx) {
             animator.animate {
                 container.update {
                     animator.stop()
+                    view.onFillListener?.onFill?.invoke(it)
                 }
             }
         }
@@ -164,4 +169,5 @@ class FillRectView(ctx : Context, var n : Int = 3) : View(ctx) {
             return view
         }
     }
+    data class OnFillListener(var onFill : (Int) -> Unit)
 }
