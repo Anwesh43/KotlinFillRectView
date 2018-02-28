@@ -8,7 +8,7 @@ import android.graphics.*
 import android.view.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class FillRectView(ctx : Context) : View(ctx) {
+class FillRectView(ctx : Context, var n : Int = 3) : View(ctx) {
     val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     override fun onDraw(canvas : Canvas) {
 
@@ -103,12 +103,11 @@ class FillRectView(ctx : Context) : View(ctx) {
             }
         }
     }
-    class FillRectContainer(var view : FillRectView, var time : Int = 0) {
-        val animator = Animator(view)
+    class FillRectContainer(var n : Int) {
         val fillRects : ConcurrentLinkedQueue<FillRect> = ConcurrentLinkedQueue()
         val updatingRects : ConcurrentLinkedQueue<FillRect> = ConcurrentLinkedQueue()
         init {
-            for(i in 0..2) {
+            for(i in 0..n-1) {
                 fillRects.add(FillRect(i))
             }
         }
@@ -135,6 +134,24 @@ class FillRectView(ctx : Context) : View(ctx) {
                         startcb()
                     }
                 })
+            }
+        }
+    }
+    data class Renderer(var view : FillRectView) {
+        val animator = Animator(view)
+        val container = FillRectContainer(view.n)
+        fun render(canvas : Canvas, paint : Paint) {
+            canvas.drawColor(Color.parseColor("#212121"))
+            container.draw(canvas, paint)
+            animator.animate {
+                container.update {
+                    animator.stop()
+                }
+            }
+        }
+        fun handleTap(x : Float, y : Float) {
+            container.handleTap(x, y) {
+                animator.start()
             }
         }
     }
