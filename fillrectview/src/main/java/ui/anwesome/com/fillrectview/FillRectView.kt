@@ -66,4 +66,28 @@ class FillRectView(ctx : Context) : View(ctx) {
             }
         }
     }
+    data class FillRect(var w : Float, var h : Float) {
+        val state = State()
+        fun draw(canvas : Canvas, paint : Paint) {
+            val size = Math.min(w, h) / 3
+            canvas.save()
+            canvas.translate(w / 2, h / 2)
+            canvas.rotate(180f * state.scales[0])
+            paint.color = Color.GRAY
+            canvas.drawRect(RectF(-size / 2, - size / 2, size / 2, size / 2 ), paint)
+            paint.color = Color.BLUE
+            val y = -(size / 2) * state.scales[1]
+            canvas.save()
+            canvas.translate(0f, y)
+            canvas.drawRect(RectF(-size / 2, 0f , size / 2, size / 2), paint)
+            canvas.restore()
+            canvas.restore()
+        }
+        fun update(stopcb : () -> Unit) {
+            state.update(stopcb)
+        }
+        fun startUpdate(startcb : () -> Unit) {
+            state.startUpdating(startcb)
+        }
+    }
 }
