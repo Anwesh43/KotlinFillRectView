@@ -3,6 +3,7 @@ package ui.anwesome.com.fillrectview
 /**
  * Created by anweshmishra on 28/02/18.
  */
+import android.app.Activity
 import android.content.*
 import android.graphics.*
 import android.view.*
@@ -154,6 +155,13 @@ class FillRectView(ctx : Context, var n : Int = 3) : View(ctx) {
             container.handleTap(x, y) {
                 animator.start()
             }
+        }
+    }
+    companion object {
+        fun create(activity : Activity):FillRectView {
+            val view = FillRectView(activity)
+            activity.setContentView(view)
+            return view
         }
     }
 }
