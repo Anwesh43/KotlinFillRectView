@@ -86,7 +86,7 @@ class FillRectView(ctx : Context, var n : Int = 3) : View(ctx) {
             canvas.rotate(180f * state.scales[0])
             paint.color = Color.GRAY
             canvas.drawRect(RectF(-size / 2, - size / 2, size / 2, size / 2 ), paint)
-            paint.color = Color.BLUE
+            paint.color = Color.parseColor("#3F51B5")
             val y = -(size / 2) * state.scales[1]
             canvas.save()
             canvas.translate(0f, y)
