@@ -6,6 +6,8 @@ package ui.anwesome.com.fillrectview
 import android.content.*
 import android.graphics.*
 import android.view.*
+import java.util.concurrent.ConcurrentLinkedQueue
+
 class FillRectView(ctx : Context) : View(ctx) {
     val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     override fun onDraw(canvas : Canvas) {
@@ -66,12 +68,19 @@ class FillRectView(ctx : Context) : View(ctx) {
             }
         }
     }
-    data class FillRect(var w : Float, var h : Float) {
+    data class FillRect(var i : Int) {
+        var x : Float = 0f
+        var y : Float = 0f
+        var size : Float = 0f
         val state = State()
         fun draw(canvas : Canvas, paint : Paint) {
-            val size = Math.min(w, h) / 3
+            val w = canvas.width.toFloat()
+            val h = canvas.height.toFloat()
+            size = Math.min(w, h) / 4
+            x = w / 2
+            y = i * 1.5f * size + size
             canvas.save()
-            canvas.translate(w / 2, h / 2)
+            canvas.translate(x, y)
             canvas.rotate(180f * state.scales[0])
             paint.color = Color.GRAY
             canvas.drawRect(RectF(-size / 2, - size / 2, size / 2, size / 2 ), paint)
@@ -83,11 +92,41 @@ class FillRectView(ctx : Context) : View(ctx) {
             canvas.restore()
             canvas.restore()
         }
-        fun update(stopcb : () -> Unit) {
-            state.update(stopcb)
+        fun update(stopcb : (Int) -> Unit) {
+            state.update {
+                stopcb(i)
+            }
         }
         fun startUpdate(startcb : () -> Unit) {
             state.startUpdating(startcb)
+        }
+    }
+    class Renderer(var view : FillRectView, var time : Int = 0) {
+        val animator = Animator(view)
+        val fillRects : ConcurrentLinkedQueue<FillRect> = ConcurrentLinkedQueue()
+        val updatingRects : ConcurrentLinkedQueue<FillRect> = ConcurrentLinkedQueue()
+        init {
+            for(i in 0..2) {
+                fillRects.add(FillRect(i))
+            }
+        }
+        fun draw(canvas : Canvas, paint : Paint) {
+            fillRects.forEach {
+                it.draw(canvas, paint)
+            }
+        }
+        fun update(stopcb : () -> Unit) {
+            updatingRects.forEach { rect ->
+                rect.update {
+                    updatingRects.remove(rect)
+                    if(updatingRects.size == 0) {
+                        stopcb()
+                    }
+                }
+            }
+        }
+        fun handleTap(x : Float, y : Float) {
+
         }
     }
 }
