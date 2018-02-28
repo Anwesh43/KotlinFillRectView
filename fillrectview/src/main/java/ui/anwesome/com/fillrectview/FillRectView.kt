@@ -97,11 +97,13 @@ class FillRectView(ctx : Context) : View(ctx) {
                 stopcb(i)
             }
         }
-        fun startUpdate(startcb : () -> Unit) {
-            state.startUpdating(startcb)
+        fun startUpdate(x : Float, y : Float, startcb : () -> Unit) {
+            if(x >= this.x - size/2 && x <= this.x + size/2 && y >= this.y - size/2 && y <= this.y +size/2) {
+                state.startUpdating(startcb)
+            }
         }
     }
-    class Renderer(var view : FillRectView, var time : Int = 0) {
+    class FillRectContainer(var view : FillRectView, var time : Int = 0) {
         val animator = Animator(view)
         val fillRects : ConcurrentLinkedQueue<FillRect> = ConcurrentLinkedQueue()
         val updatingRects : ConcurrentLinkedQueue<FillRect> = ConcurrentLinkedQueue()
@@ -125,8 +127,15 @@ class FillRectView(ctx : Context) : View(ctx) {
                 }
             }
         }
-        fun handleTap(x : Float, y : Float) {
-
+        fun handleTap(x : Float, y : Float, startcb : () -> Unit) {
+            fillRects.forEach { rect ->
+                rect.startUpdate(x, y, {
+                    updatingRects.add(rect)
+                    if(updatingRects.size == 1) {
+                        startcb()
+                    }
+                })
+            }
         }
     }
 }
